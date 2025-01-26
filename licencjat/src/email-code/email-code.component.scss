@@ -1,0 +1,72 @@
+.email-code-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #5c5561;
+  }
+  
+  .email-code-box {
+    background-color: #fdf7f7;
+    border-radius: 8px;
+    padding: 30px 40px;
+    justify-content: center; 
+  align-items: center; 
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .email-code-input {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    border: none;
+    justify-content: center; 
+  align-items: center; 
+    border-radius: 20px;
+    background-color: #e6e6e6;
+    text-align: center;
+  }
+  
+  .email-code-hint {
+    font-size: 0.8em;
+    color: #a0a0a0;
+    margin: 10px 0;
+  }
+  
+  .email-code-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .email-code-button {
+    background-color: #a385ff;
+    color: white;
+    border: none;
+    justify-content: center; 
+  align-items: center; 
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  
+  .email-code-button:hover {
+    background-color: #8b6ae4;
+  }
+  
+  .back-button {
+    background-color: #a385ff;
+  }
+  
+  .back-button:hover {
+    background-color: #8b6ae4;
+  }
+  

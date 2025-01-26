@@ -1,0 +1,75 @@
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #5c5561;
+}
+
+.login-box {
+  background-color: #fdf7f7;
+  border-radius: 8px;
+  padding: 30px 40px;
+  justify-content: center; 
+  align-items: center; 
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.login-input {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  justify-content: center; 
+  align-items: center; 
+  border: none;
+  border-radius: 20px;
+  background-color: #e6e6e6;
+  text-align: center;
+}
+
+.forgot-password {
+  font-size: 0.9em;
+  color: #8b6ae4;
+  justify-content: center; 
+  align-items: center; 
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  text-decoration: none;
+  color: #8b6ae4;
+  justify-content: center; 
+  align-items: center; 
+  cursor: pointer;
+  transition: color 0.3s ease-in-out;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+  color: #6a4fbf;
+}
+
+.login-button {
+  background-color: #a385ff;
+  color: white;
+  border: none;
+  justify-content: center; 
+  align-items: center; 
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  background-color: #8b6ae4;
+}
