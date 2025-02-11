@@ -4,13 +4,14 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgFor } from '@angular/common';
 import { NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 interface Task {
   title: string;
   description: string;
-  status: 'Error' | 'In Progress' | 'Done';
+  status: 'Issue' | 'In Progress' | 'Done';
   createdBy: string;
-  createdDate: string; // Nowe pole dla daty
+  createdDate: string;
 }
 
 @Component({
@@ -18,12 +19,23 @@ interface Task {
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.scss'],
   standalone: true,
-  imports: [NgClass, NgIf, NgFor, CommonModule],
+  imports: [NgClass, NgIf, NgFor, CommonModule, FormsModule],
 })
 export class TasksComponent {
   userName: string = 'Name Surname';
   currentPage: number = 1;
   itemsPerPage: number = 3;
+  showModal: boolean = false;
+
+  // Lista użytkowników, w tym "Name Surname"
+  teammates = [
+    { name: 'Name Surname' }, // ✅ Dodanie użytkownika Name Surname
+    { name: 'Anna Kowalska' },
+    { name: 'Jan Nowak' },
+    { name: 'Katarzyna Lis' },
+    { name: 'Marek Wiśniewski' },
+    { name: 'Piotr Adamski' }
+  ];
 
   tasks: Task[] = [
     {
@@ -31,39 +43,74 @@ export class TasksComponent {
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       status: 'In Progress',
       createdBy: 'Jan Kowalski',
-      createdDate: '2023-01-01', // Przykładowa data
+      createdDate: '2023-01-01',
     },
     {
       title: 'Zadanie 2',
       description: 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      status: 'Error',
+      status: 'Issue',
       createdBy: 'Anna Nowak',
-      createdDate: '2023-01-02', // Przykładowa data
+      createdDate: '2023-01-02',
     },
     {
       title: 'Zadanie 3',
       description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
       status: 'In Progress',
       createdBy: 'Piotr Wiśniewski',
-      createdDate: '2023-01-03', // Przykładowa data
-    },
-    {
-      title: 'Zadanie 4',
-      description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
-      status: 'In Progress',
-      createdBy: 'Jan Kowalski',
-      createdDate: '2023-01-04', // Przykładowa data
-    },
-    {
-      title: 'Zadanie 5',
-      description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
-      status: 'In Progress',
-      createdBy: 'Anna Nowak',
-      createdDate: '2023-01-05', // Przykładowa data
+      createdDate: '2023-01-03',
     }
   ];
 
+  newTask: Task = {
+    title: '',
+    description: '',
+    status: 'In Progress',
+    createdBy: this.teammates[0].name, // Domyślnie wybrany "Name Surname"
+    createdDate: new Date().toISOString().split('T')[0]
+  };
+
   constructor(private router: Router) {}
+
+  // 🟢 Otwieranie modala
+  openModal(): void {
+    this.showModal = true;
+  }
+
+  // 🟢 Zamknięcie modala
+  closeModal(): void {
+    this.showModal = false;
+  }
+
+  // 🟢 Zapisywanie zadania tylko jeśli przypisane do "Name Surname"
+  saveTask(): void {
+    if (!this.newTask.title.trim() || !this.newTask.description.trim()) {
+      alert('Proszę uzupełnić wszystkie pola!');
+      return;
+    }
+
+    if (this.newTask.createdBy !== this.userName) {
+      alert('To zadanie nie zostało przypisane do Ciebie. Nie zostanie dodane do listy.');
+      this.closeModal();
+      return;
+    }
+
+    const taskToAdd: Task = {
+      ...this.newTask,
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+
+    this.tasks.push(taskToAdd);
+
+    this.newTask = {
+      title: '',
+      description: '',
+      status: 'In Progress',
+      createdBy: this.teammates[0].name, // Resetowanie wyboru do "Name Surname"
+      createdDate: new Date().toISOString().split('T')[0]
+    };
+
+    this.closeModal();
+  }
 
   get paginatedTasks(): Task[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
@@ -82,11 +129,11 @@ export class TasksComponent {
     }
   }
 
-  changeStatus(task: Task, newStatus: 'Error' | 'In Progress' | 'Done'): void {
+  changeStatus(task: Task, newStatus: 'Issue' | 'In Progress' | 'Done'): void {
     if (newStatus === 'Done') {
-      this.tasks = this.tasks.filter(t => t !== task); // Usuń zadanie z listy
+      this.tasks = this.tasks.filter(t => t !== task);
     } else {
-      task.status = newStatus; // Zaktualizuj status
+      task.status = newStatus;
     }
   }
 
@@ -96,6 +143,10 @@ export class TasksComponent {
 
   navigateToDashboard(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  navigateToChat(): void {
+    this.router.navigate(['/chat']);
   }
 
   get totalPages(): number {
@@ -119,20 +170,8 @@ export class TasksComponent {
   navigateToCalendar(): void {
     this.router.navigate(['/calendar']);
   }
-  
-  navigateToTasks() {
+
+  navigateToTasks(): void {
     this.router.navigate(['/tasks']);
-  }
-  addTask(): void {
-    const newTaskNumber = this.tasks.length + 1; // Oblicz dynamiczny numer zadania
-    const newTask: Task = {
-      title: `Zadanie ${newTaskNumber}`, // Użyj dynamicznego numeru w tytule
-      description: 'Opis nowego zadania',
-      status: 'In Progress',
-      createdBy: this.userName,
-      createdDate: new Date().toISOString().split('T')[0], // Aktualna data w formacie YYYY-MM-DD
-    };
-    this.tasks.push(newTask); // Dodaj zadanie na koniec listy
-    this.goToPage(this.totalPages); // Przejdź do ostatniej strony, aby pokazać nowe zadanie
   }
 }

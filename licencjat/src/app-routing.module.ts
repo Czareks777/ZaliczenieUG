@@ -6,6 +6,7 @@ import { PasswordSuccessComponent } from './password-success/password-success.co
 import { EmailCodeComponent } from './email-code/email-code.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { TeamComponent } from './team/team.component';
+import { ChatComponent } from './chat/chat.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent }, 
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'password-success', component: PasswordSuccessComponent }, 
   { path: 'dashboard', component: DashboardComponent }, 
   { path: 'team', component: TeamComponent },
+  { path: 'chat', component: ChatComponent },
   { path: '**', redirectTo: '' } 
 ];
 

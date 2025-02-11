@@ -16,7 +16,11 @@
       <input type="text" placeholder="Wyszukaj użytkownika" class="search-bar" />
       <div class="user-info">
         <span class="user-name">{{ userName }}</span>
-        <img src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740" alt="User Avatar" class="user-avatar" />
+        <img
+          src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740"
+          alt="User Avatar"
+          class="user-avatar"
+        />
         <button (click)="logout()" class="logout-button">Log out</button>
       </div>
     </header>
@@ -51,35 +55,25 @@
     <!-- Calendar Section -->
     <section class="calendar-section">
       <full-calendar [options]="calendarOptions"></full-calendar>
-    </section>
 
-    <!-- Tooltip -->
-    <div
-      class="tooltip"
-      *ngIf="tooltipVisible"
-      [style.top.px]="tooltipPosition.top"
-      [style.left.px]="tooltipPosition.left"
-    >
-      {{ tooltipContent }}
-    </div>
+      <!-- Tooltip -->
+      <div
+        class="tooltip"
+        *ngIf="tooltipVisible"
+        [style.top.px]="tooltipPosition.top"
+        [style.left.px]="tooltipPosition.left"
+      >
+        {{ tooltipContent }}
+      </div>
+    </section>
 
     <!-- Edit Event Modal -->
     <div class="modal" *ngIf="isEditModalVisible">
       <div class="modal-content">
         <h3>Edytuj wydarzenie</h3>
         <form (submit)="saveEvent()">
-          <input
-            type="text"
-            [(ngModel)]="newEventTitle"
-            name="title"
-            required
-          />
-          <input
-            type="date"
-            [(ngModel)]="newEventDate"
-            name="date"
-            required
-          />
+          <input type="text" [(ngModel)]="newEventTitle" name="title" required />
+          <input type="date" [(ngModel)]="newEventDate" name="date" required />
           <input
             type="text"
             [(ngModel)]="newEventDescription"
@@ -89,6 +83,7 @@
           <div class="modal-buttons">
             <button type="submit" class="save-event-button">Zapisz</button>
             <button type="button" (click)="closeEditModal()" class="cancel-button">Anuluj</button>
+            <button type="button" (click)="deleteEvent()" class="delete-button">Usuń</button>
           </div>
         </form>
       </div>

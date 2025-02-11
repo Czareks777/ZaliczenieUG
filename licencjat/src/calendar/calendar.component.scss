@@ -251,7 +251,7 @@ html, body, app-root {
 }
 
 .cancel-button {
-  background-color: #dc3545;
+  background-color: #dcc335;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -261,7 +261,7 @@ html, body, app-root {
 }
 
 .cancel-button:hover {
-  background-color: #c82333;
+  background-color: #dcc335;
 }
 .event-form-section input,
 .modal-content input {
@@ -289,4 +289,17 @@ html, body, app-root {
 .tooltip.visible {
   opacity: 1;
   transform: translateX(-50%) translateY(-10px);
+}
+.delete-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
 }

@@ -7,6 +7,7 @@ import { DashboardComponent } from '../dashboard/dashboard.component';
 import { TeamComponent } from '../team/team.component';
 import { CalendarComponent } from '../calendar/calendar.component';
 import { TasksComponent } from '../tasks/tasks.component';
+import { ChatComponent } from '../chat/chat.component';
 
 export const routes: Routes = [
   { path: '', component: LoginComponent }, // Strona logowania
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'team', component: TeamComponent },
   { path: 'calendar', component: CalendarComponent },
   {path: 'tasks', component: TasksComponent},
+  {path: 'chat', component: ChatComponent},
   { path: '**', redirectTo: '' } // Fallback dla nieznanych tras
 ];

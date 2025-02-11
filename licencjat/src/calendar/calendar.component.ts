@@ -22,6 +22,10 @@ export class CalendarComponent {
   selectedEvent: any = null;
   isEditModalVisible: boolean = false;
 
+  tooltipContent: string = ''; // Treść tooltipa
+  tooltipPosition = { top: 0, left: 0 }; // Pozycja tooltipa
+  tooltipVisible: boolean = false; // Widoczność tooltipa
+
   calendarOptions = {
     initialView: 'dayGridMonth',
     plugins: [dayGridPlugin, interactionPlugin],
@@ -41,8 +45,6 @@ export class CalendarComponent {
     eventMouseEnter: this.handleEventMouseEnter.bind(this),
     eventMouseLeave: this.handleEventMouseLeave.bind(this),
   };
-
-  
 
   constructor(private router: Router) {}
 
@@ -84,29 +86,25 @@ export class CalendarComponent {
     this.newEventDescription = arg.event.extendedProps.description || '';
     this.isEditModalVisible = true;
   }
-  tooltipContent: string = ''; // Treść tooltipa
-tooltipPosition = { top: 0, left: 0 }; // Pozycja tooltipa
-tooltipVisible: boolean = false; // Widoczność tooltipa
-  
-  
 
-handleEventMouseEnter(info: any) {
-  const description = info.event.extendedProps.description;
-  if (description) {
-    this.tooltipContent = description; // Ustaw treść tooltipa
-    const rect = info.el.getBoundingClientRect();
-    this.tooltipPosition = {
-      top: rect.top + window.scrollY - 40, // Pozycja nad elementem
-      left: rect.left + window.scrollX + rect.width / 2, // Wyśrodkowanie
-    };
-    this.tooltipVisible = true; // Pokaż tooltip
+  handleEventMouseEnter(info: any) {
+    const description = info.event.extendedProps.description;
+    if (description) {
+      this.tooltipContent = description; // Ustaw treść tooltipa
+      const rect = info.el.getBoundingClientRect();
+      this.tooltipPosition = {
+        top: rect.top + window.scrollY - 40, // Pozycja nad elementem
+        left: rect.left + window.scrollX + rect.width / 2, // Wyśrodkowanie
+      };
+      this.tooltipVisible = true; // Pokaż tooltip
+    }
   }
-}
-  
-handleEventMouseLeave() {
-  this.tooltipVisible = false; // Ukryj tooltip
-  this.tooltipContent = ''; // Wyczyść treść tooltipa
-}
+
+  handleEventMouseLeave() {
+    this.tooltipVisible = false; // Ukryj tooltip
+    this.tooltipContent = ''; // Wyczyść treść tooltipa
+  }
+
   saveEvent() {
     if (this.selectedEvent) {
       this.selectedEvent.setProp('title', this.newEventTitle);
@@ -116,7 +114,13 @@ handleEventMouseLeave() {
       alert('Wydarzenie zostało zaktualizowane!');
     }
   }
-
+  deleteEvent() {
+    if (this.selectedEvent) {
+      this.selectedEvent.remove(); // Usuwa wydarzenie z kalendarza
+      this.isEditModalVisible = false; // Ukrywa modal
+      alert('Wydarzenie zostało usunięte!');
+    }
+  }
   closeEditModal() {
     this.isEditModalVisible = false;
   }

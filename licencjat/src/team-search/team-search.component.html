@@ -1,0 +1,18 @@
+<div class="search-container">
+    <input 
+      type="text" 
+      class="search-bar"
+      placeholder="Wyszukaj użytkownika"
+      [(ngModel)]="searchQuery"
+      (focus)="toggleDropdown()"
+      (blur)="closeDropdown()"
+    />
+  
+    <div class="dropdown" *ngIf="isDropdownOpen">
+      <div class="dropdown-item" *ngFor="let member of filteredTeammates">
+        <img [src]="member.avatar" class="avatar" alt="Avatar" />
+        <span>{{ member.name }}</span>
+      </div>
+    </div>
+  </div>
+  

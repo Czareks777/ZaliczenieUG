@@ -1,0 +1,206 @@
+.chat-container {
+  display: flex;
+  height: 100vh; /* Wypełnia całą wysokość ekranu */
+  width: 100%;
+  overflow: hidden;
+}
+
+.contact-list {
+  width: 20%;
+  background: #e6e6e6;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Pozwala na przewijanie listy kontaktów */
+}
+
+.contact-item {
+  background: #333;
+  color: white;
+  padding: 10px;
+  margin: 5px 0;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.contact-item:hover {
+  background: #615b5b;
+}
+
+.chat-window {
+  width: 80%;
+  background: #9b9898;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px); /* Dopasowanie do wysokości ekranu */
+  overflow: hidden;
+}
+
+.messages {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto; /* Pozwala na przewijanie tylko okna wiadomości */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: calc(100vh - 130px); /* Dostosowanie, aby nie zasłaniało inputa */
+}
+
+.message-sent {
+  text-align: right;
+  background: #f7f1fa;
+  padding: 8px;
+  border-radius: 8px;
+  max-width: 60%;
+  align-self: flex-end;
+}
+
+.message-received {
+  text-align: left;
+  background: #6C5CE7;
+  padding: 8px;
+  color: white;
+  border-radius: 8px;
+  max-width: 60%;
+  align-self: flex-start;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  background: #9b9898;
+  border-top: 2px solid #bbb;
+  min-height: 60px; /* Zapobiega ukrywaniu */
+  flex-shrink: 0; /* Zapobiega ściskaniu */
+}
+
+.chat-input input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.chat-input button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  background: #6C5CE7;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.chat-input button:hover {
+  background: #6e3380;
+}
+
+/* General Layout */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Zapobiega przewijaniu całej strony */
+}
+
+.dashboard-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 80px;
+  height: 100vh;
+  background-color: #615b5b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  padding: 0;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-btn {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  padding: 10px;
+  transition: background 0.3s ease-in-out;
+}
+
+.sidebar-btn:hover {
+  background-color: #e0e0e0;
+  border-radius: 8px;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  background-color: #fdf7f7;
+  overflow: hidden;
+}
+
+/* Header */
+.top-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #615b5b;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  gap: 20px;
+  position: relative;
+}
+
+.search-bar {
+  width: 50%;
+  padding: 8px 12px;
+  font-size: 20px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  position: absolute;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logout-button {
+  background-color: #a385ff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* Zapobiega przewijaniu okna */
+body,
+html {
+  height: 100%;
+  overflow: hidden;
+}
