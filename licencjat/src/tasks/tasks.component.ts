@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { NgFor } from '@angular/common';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TeamSearchComponent } from '../team-search/team-search.component';
 
 interface Task {
   title: string;
@@ -19,7 +20,7 @@ interface Task {
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.scss'],
   standalone: true,
-  imports: [NgClass, NgIf, NgFor, CommonModule, FormsModule],
+  imports: [NgClass, NgIf, NgFor, CommonModule, FormsModule,TeamSearchComponent],
 })
 export class TasksComponent {
   userName: string = 'Name Surname';

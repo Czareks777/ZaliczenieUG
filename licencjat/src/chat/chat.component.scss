@@ -11,7 +11,29 @@
   padding: 10px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Pozwala na przewijanie listy kontaktów */
+  height: 100vh; /* Pełna wysokość ekranu */
+  overflow: hidden;
+  justify-content: space-between; /* Rozmieszcza elementy, aby przycisk był na dole */
+}
+
+.contact-items-container {
+  flex-grow: 1; /* Zapewnia, że lista kontaktów zajmuje dostępne miejsce */
+  overflow-y: auto; /* Włącza przewijanie listy */
+}
+.logout-button {
+  background-color: #a385ff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #8b6ae4;
+}
+.contact-list h3 {
+  margin-bottom: 10px;
 }
 
 .contact-item {
@@ -29,23 +51,42 @@
   background: #615b5b;
 }
 
+/* Przycisk "Create Group Chat" zawsze na dole */
+.group-chat-btn {
+  background-color: #a385ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s;
+  width: 100%;
+  margin-bottom: 70px; 
+}
+
+.group-chat-btn:hover {
+  background-color: #8b6ae4;
+}
+
 .chat-window {
   width: 80%;
   background: #9b9898;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px); /* Dopasowanie do wysokości ekranu */
+  height: calc(100vh - 70px);
   overflow: hidden;
 }
 
 .messages {
   flex-grow: 1;
   padding: 10px;
-  overflow-y: auto; /* Pozwala na przewijanie tylko okna wiadomości */
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  height: calc(100vh - 130px); /* Dostosowanie, aby nie zasłaniało inputa */
+  height: calc(100vh - 130px);
 }
 
 .message-sent {
@@ -72,8 +113,8 @@
   padding: 10px;
   background: #9b9898;
   border-top: 2px solid #bbb;
-  min-height: 60px; /* Zapobiega ukrywaniu */
-  flex-shrink: 0; /* Zapobiega ściskaniu */
+  min-height: 60px;
+  flex-shrink: 0;
 }
 
 .chat-input input {
@@ -87,7 +128,7 @@
   margin-left: 10px;
   padding: 10px 15px;
   border: none;
-  background: #6C5CE7;
+  background: #a385ff;
   color: white;
   cursor: pointer;
   border-radius: 5px;
@@ -95,7 +136,7 @@
 }
 
 .chat-input button:hover {
-  background: #6e3380;
+  background: #8b6ae4;
 }
 
 /* General Layout */
@@ -109,7 +150,7 @@ html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Zapobiega przewijaniu całej strony */
+  overflow: hidden;
 }
 
 .dashboard-container {
@@ -173,34 +214,105 @@ body {
   border: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+.sidebar-btn {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  padding: 10px;
+  transition: background 0.3s ease-in-out;
+}
 
-.user-info {
-  position: absolute;
-  right: 30px;
+.sidebar-btn:hover {
+  background-color: #e0e0e0;
+  border-radius: 8px;
+}
+
+/* Styl nowego przycisku "Chat Settings" */
+.settings-btn {
+  background-color: #4d79ff;
+}
+
+.settings-btn:hover {
+  background-color: #005ce6;
+}
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 30px;
+  width: 400px;
+  max-height: 530px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  text-align: center;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1999;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.modal-content {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.logout-button {
-  background-color: #a385ff;
-  color: white;
+.modal input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn-secondary {
+  background: #b5b5b5;
+  color: black;
   border: none;
-  border-radius: 20px;
   padding: 8px 12px;
   cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
-/* Zapobiega przewijaniu okna */
-body,
-html {
-  height: 100%;
-  overflow: hidden;
+.btn-primary {
+  background: #a385ff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background: #8a6eff;
+}
+
+.btn-secondary:hover {
+  background: #a1a1a1;
 }

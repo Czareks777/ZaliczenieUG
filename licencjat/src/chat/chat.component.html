@@ -1,52 +1,85 @@
 <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <button class="sidebar-btn" (click)="navigateToDashboard()"><i class="bi bi-house-door"></i></button>
-      <button class="sidebar-btn" (click)="navigateToTeam()"><i class="bi bi-people"></i></button>
-      <button class="sidebar-btn"><i class="bi bi-chat"></i></button>
-      <button class="sidebar-btn" (click)="navigateToCalendar()"><i class="bi bi-calendar"></i></button>
-      <button class="sidebar-btn" (click)="navigateToTasks()"><i class="bi bi-list-check"></i></button>
-    </aside>
-  
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Header -->
-      <header class="top-bar">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <input type="text" placeholder="Wyszukaj użytkownika" class="search-bar" />
-        <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <img src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740" alt="User Avatar" class="user-avatar" />
-          <button (click)="logout()" class="logout-button">Log out</button>
-        </div>
-      </header>
-  
-      <!-- Chat Container -->
-      <div class="chat-container">
-        <!-- Contact List -->
-        <div class="contact-list">
-          <h3>Contact list of teammates</h3>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="sidebar-btn" (click)="navigateToDashboard()"><i class="bi bi-house-door"></i></button>
+    <button class="sidebar-btn" (click)="navigateToTeam()"><i class="bi bi-people"></i></button>
+    <button class="sidebar-btn"><i class="bi bi-chat"></i></button>
+    <button class="sidebar-btn" (click)="navigateToCalendar()"><i class="bi bi-calendar"></i></button>
+    <button class="sidebar-btn" (click)="navigateToTasks()"><i class="bi bi-list-check"></i></button>
+    <!-- Nowy przycisk Settings -->
+    <button class="sidebar-btn" ><i class="bi bi-gear"></i></button>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="top-bar">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+      <app-team-search></app-team-search>
+      <div class="user-info">
+        <span class="user-name">{{ userName }}</span>
+        <img src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740" alt="User Avatar" class="user-avatar" />
+      </div>
+      <button (click)="logout()" class="logout-button">Log out</button>
+    </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+      <!-- Contact List -->
+      <div class="contact-list">
+        <h3>Contact list of teammates</h3>
+
+        <!-- Lista kontaktów -->
+        <div class="contact-items-container">
           <div *ngFor="let teammate of teammates" class="contact-item" (click)="selectTeammate(teammate)">
             {{ teammate.name }}
           </div>
         </div>
-  
-        <!-- Chat Window -->
-        <div class="chat-window">
-            <h3>Chat with {{ selectedTeammate?.name || "..." }}</h3>
-            <div class="messages">
-              <div *ngFor="let message of messages" [ngClass]="{ 'message-sent': message.sender === userName, 'message-received': message.sender !== userName }">
-                {{ message.content }}
-              </div>
-            </div>
-          
-            <!-- Input Box -->
-            <div class="chat-input">
-              <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..." />
-              <button class="btn btn-primary" (click)="sendMessage()">Send</button>
-            </div>
+
+        <!-- Przycisk "Create Group Chat" -->
+        <button class="group-chat-btn" (click)="openGroupChatModal()">Create Group Chat</button>
+      </div>
+      <div class="modal-backdrop" *ngIf="showGroupChatModal"></div>
+      <div class="modal" *ngIf="showGroupChatModal">
+        <div class="modal-content">
+          <h2 class="modal-title"><strong>Stwórz Grupowy Czat</strong></h2>
+      
+          <label for="chatTitle"><strong>Tytuł chatu</strong></label>
+          <input id="chatTitle" type="text" [(ngModel)]="groupChatTitle" placeholder="Wpisz tytuł czatu" />
+      
+          <label><strong>Dodaj uczestników</strong></label>
+          <mat-form-field appearance="fill">
+            <mat-label>Wybierz członków zespołu</mat-label>
+            <mat-select multiple [(value)]="selectedTeammates">
+              <mat-option *ngFor="let teammate of teammates" [value]="teammate">
+                <mat-checkbox [checked]="selectedTeammates.includes(teammate)">
+                  {{ teammate.name }}
+                </mat-checkbox>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+      
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeGroupChatModal()">Wróć</button>
+            <button class="btn-primary" (click)="createGroupChat()">Stwórz</button>
           </div>
+        </div>
+      </div>
+      <!-- Chat Window -->
+      <div class="chat-window">
+        <h3>Chat with {{ selectedTeammate?.name || "..." }}</h3>
+        <div class="messages">
+          <div *ngFor="let message of messages" [ngClass]="{ 'message-sent': message.sender === userName, 'message-received': message.sender !== userName }">
+            {{ message.content }}
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="chat-input">
+          <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..." />
+          <button class="btn btn-primary" (click)="sendMessage()">Send</button>
+        </div>
       </div>
     </div>
   </div>
-  
+</div>

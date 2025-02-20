@@ -1,25 +1,35 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../app/services/auth.service';
+import { TeamSearchComponent } from "../team-search/team-search.component";
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   standalone: true,
-  imports: [RouterLink]
+  imports: [TeamSearchComponent]
 })
-export class DashboardComponent {
-  userName: string = 'Name Surname';
+export class DashboardComponent implements OnInit {
+  userName: string = 'Nieznany użytkownik';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.userName = this.authService.getUserName();
+      console.log("Użytkownik w Dashboard:", this.userName); // 🔍 Debugging
+    }, );
+  }
 
   logout() {
-    console.log('User logged out');
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
+
   navigateToTeam() {
     this.router.navigate(['/team']);
   }
+
   navigateToTasks() {
     this.router.navigate(['/tasks']);
   }

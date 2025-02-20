@@ -5,12 +5,13 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { TeamSearchComponent } from "../team-search/team-search.component";
 
 @Component({
   selector: 'app-calendar',
   templateUrl: './calendar.component.html',
   standalone: true,
-  imports: [FullCalendarModule, FormsModule, CommonModule],
+  imports: [FullCalendarModule, FormsModule, CommonModule, TeamSearchComponent],
   styleUrls: ['./calendar.component.scss'],
 })
 export class CalendarComponent {

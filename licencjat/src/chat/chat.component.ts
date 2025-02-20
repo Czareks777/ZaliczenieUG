@@ -2,13 +2,17 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { TeamSearchComponent } from "../team-search/team-search.component";
+
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule]  
+  imports: [CommonModule, FormsModule, MatSelectModule, MatCheckboxModule,  TeamSearchComponent]  
 })
 export class ChatComponent {
   userName: string = 'Name Surname';
@@ -22,7 +26,6 @@ export class ChatComponent {
   ];
   selectedTeammate: any = null;
 
-  // 🟢 DANE TESTOWE ZAMIAST BACKENDU
   messages = [
     { sender: 'Name Surname', content: 'Cześć, jak się masz?' },
     { sender: 'Anna Kowalska', content: 'Hej! Wszystko w porządku, a u Ciebie?' },
@@ -32,22 +35,25 @@ export class ChatComponent {
 
   newMessage: string = '';
 
-  constructor(private router: Router) {}
+  showGroupChatModal: boolean = false;
+  groupChatTitle: string = '';
+  selectedTeammates: any[] = [];
 
+  constructor(private router: Router) {}
+  openGroupChatModal() {
+    console.log("Modal otwierany...");
+    this.showGroupChatModal = true;
+  }
   selectTeammate(teammate: any) {
     this.selectedTeammate = teammate;
-
-    // 🚀 WYŁĄCZAMY POBIERANIE DANYCH Z BACKENDU
-    // this.loadMessages(); <-- USUNIĘTE!
   }
 
   logout() {
     this.router.navigate(['/login']);
   }
 
-  navigateToCalendar(): void {
+  navigateToCalendar() {
     this.router.navigate(['/calendar']);
-    
   }
 
   navigateToTeam() {
@@ -64,9 +70,23 @@ export class ChatComponent {
 
   sendMessage() {
     if (!this.newMessage || !this.selectedTeammate) return;
-
-    const message = { sender: this.userName, content: this.newMessage };
-    this.messages.push(message);
+    this.messages.push({ sender: this.userName, content: this.newMessage });
     this.newMessage = '';
+  }
+
+ 
+
+  closeGroupChatModal() {
+    this.showGroupChatModal = false;
+  }
+
+  createGroupChat() {
+    if (!this.groupChatTitle.trim() || this.selectedTeammates.length === 0) {
+      alert('Podaj tytuł czatu i wybierz uczestników.');
+      return;
+    }
+
+    alert(`Stworzono czat: "${this.groupChatTitle}" z ${this.selectedTeammates.length} uczestnikami.`);
+    this.closeGroupChatModal();
   }
 }
