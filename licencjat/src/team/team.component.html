@@ -51,11 +51,13 @@
     <h2 class="modal-title"><strong>Dodaj nowego członka zespołu</strong></h2>
 
     <label for="newMemberName"><strong>Wybierz pracownika</strong></label>
-    <select id="newMemberName" [(ngModel)]="selectedNewMember">
-      <option *ngFor="let employee of nonTeamMembers" [value]="employee.name">
-        {{ employee.name }}
-      </option>
-    </select>
+<select id="newMemberName" [(ngModel)]="selectedNewMemberId">
+  <!-- Ustawiamy value na employee.id (liczbę) -->
+  <option *ngFor="let employee of nonTeamMembers" [value]="employee.id">
+    <!-- A w widoku pokazujemy np. imię + nazwisko -->
+    {{ employee.name }} {{ employee.surname }}
+  </option>
+</select>
 
     <label for="newMemberPosition"><strong>Wybierz stanowisko</strong></label>
     <select id="newMemberPosition" [(ngModel)]="selectedNewMemberPosition">

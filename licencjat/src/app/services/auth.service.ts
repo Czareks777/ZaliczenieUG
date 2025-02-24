@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
-
+const CLAIM_TYPES = {
+  NAME_IDENTIFIER: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+};
 @Injectable({
   providedIn: 'root'
 })
@@ -40,24 +42,47 @@ export class AuthService {
     return !!this.getToken();
   }
 
+
+  
   /** 🔹 Dekodowanie tokena JWT i zapisanie nazwy użytkownika */
   private saveToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
   
     try {
       const decodedToken: any = jwtDecode(token);
-      console.log('Decoded Token:', decodedToken); // 🔍 Debugging
+      console.log('Decoded Token:', decodedToken); // Debugowanie
   
-      // Pobranie imienia i nazwiska
-      const fullName = `${decodedToken["name"]} ${decodedToken["surname"]}`.trim();
+      // Sprawdź, czy claimy są poprawnie odczytywane
+      const name = decodedToken["name"];
+      const surname = decodedToken["surname"];
       
-      localStorage.setItem(this.usernameKey, fullName);
+      if (name && surname) {
+        const fullName = `${name} ${surname}`.trim();
+        localStorage.setItem(this.usernameKey, fullName);
+      } else {
+        console.error('Brak wymaganych pól w tokenie: name i surname');
+      }
     } catch (error) {
       console.error('Błąd dekodowania tokena:', error);
     }
   }
   
+// auth.service.ts
+getCurrentUser(): { name: string, surname: string } {
+  const token = this.getToken();
+  if (!token) return { name: '', surname: '' };
 
+  try {
+    const decoded: any = jwtDecode(token);
+    return { 
+      name: decoded['name'] || '',
+      surname: decoded['surname'] || '' 
+    };
+  } catch (e) {
+    console.error('Błąd dekodowania tokena:', e);
+    return { name: '', surname: '' };
+  }
+}
   /** 🔹 Pobranie zapisanej nazwy użytkownika */
  
 
@@ -81,7 +106,19 @@ export class AuthService {
       return 'Nieznany użytkownik';
     }
   }
+  getCurrentUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
   
+    try {
+      const decoded: any = jwtDecode(token);
+      const userId = parseInt(decoded[CLAIM_TYPES.NAME_IDENTIFIER]);
+      return isNaN(userId) ? null : userId;
+    } catch (e) {
+      console.error('Błąd dekodowania tokena:', e);
+      return null;
+    }
+  }
   
   
 }

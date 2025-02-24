@@ -1,148 +1,211 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TeamSearchComponent } from "../team-search/team-search.component";
 import { FormsModule } from '@angular/forms';
+
+import { TeamSearchComponent } from '../team-search/team-search.component';
+import { UserService, User } from '../app/services/user.service';
+import { TeamService, TeamMember } from '../app/services/team.service';
+import { AuthService } from '../app/services/auth.service';
 
 @Component({
   selector: 'app-team',
   standalone: true,
-  imports: [CommonModule, TeamSearchComponent,FormsModule],
+  imports: [CommonModule, FormsModule, TeamSearchComponent],
   templateUrl: './team.component.html',
   styleUrls: ['./team.component.scss'],
 })
-export class TeamComponent {
-  userName: string = 'Name Surname';
+export class TeamComponent implements OnInit {
+  userName: string = 'Nieznany użytkownik';
+  teamMembers: TeamMember[] = [];
+  nonTeamMembers: User[] = [];
 
-  teamMembers = [
-    { name: 'Anna Kowalska', position: 'Frontend Developer' },
-    { name: 'Jan Nowak', position: 'Backend Developer' },
-    { name: 'Katarzyna Lis', position: 'UX Designer' },
-    { name: 'Marek Wiśniewski', position: 'Project Manager' },
-    { name: 'Piotr Adamski', position: 'QA Specialist' },
-    { name: 'Ewa Zielińska', position: 'Business Analyst' },
-    { name: 'Tomasz Kwiatkowski', position: 'DevOps Engineer' },
-    { name: 'Magdalena Nowak', position: 'Scrum Master' },
-    { name: 'Krzysztof Wójcik', position: 'Support Specialist' },
-    { name: 'Natalia Lewandowska', position: 'Product Owner' },
+  // Stanowiska
+  jobPositions: string[] = [
+    'Frontend Developer', 'Backend Developer', 'UX Designer', 
+    'Project Manager', 'QA Specialist', 'Business Analyst', 
+    'DevOps Engineer', 'Scrum Master', 'Support Specialist', 'Product Owner'
   ];
 
-  nonTeamMembers = [
-    { name: 'Ewa Zielińska' },
-    { name: 'Tomasz Kwiatkowski' },
-    { name: 'Magdalena Nowak' },
-    { name: 'Krzysztof Wójcik' },
-    { name: 'Natalia Lewandowska' }
-  ];
-
-  jobPositions = [
-    'Frontend Developer',
-    'Backend Developer',
-    'UX Designer',
-    'Project Manager',
-    'QA Specialist',
-    'Business Analyst',
-    'DevOps Engineer',
-    'Scrum Master',
-    'Support Specialist',
-    'Product Owner'
-  ];
-
+  // Paginacja
   currentPage: number = 1;
   itemsPerPage: number = 5;
- showAddMemberModal: boolean = false;
-  selectedNewMember: string = '';
+
+  // Modal
+  showAddMemberModal: boolean = false;
+  selectedNewMemberId: number | null = null;
   selectedNewMemberPosition: string = '';
 
-  constructor(private router: Router) {}
+  // Tu będziemy trzymać ID zespołu aktualnie zalogowanego użytkownika
+  currentUserTeamId: number | null = null;
 
-  get paginatedMembers() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.teamMembers.slice(startIndex, endIndex);
+  constructor(
+    private router: Router, 
+    private userService: UserService, 
+    private teamService: TeamService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    // Ustawiamy nazwę zalogowanego użytkownika (np. Anna Kowalska)
+    this.userName = this.authService.getUserName();
+
+    // 1. Najpierw pobierz dane zalogowanego użytkownika z backendu lub z tokena
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => {
+        // Zapisujemy teamId zalogowanego użytkownika
+        this.currentUserTeamId = user.teamId || null;
+
+        // 2. Jeśli user nie ma zespołu, to wyświetlamy puste tablice
+        if (!this.currentUserTeamId) {
+          this.teamMembers = [];
+          this.nonTeamMembers = [];
+          return;
+        }
+
+        // 3. Wczytujemy członków zespołu (zwróć uwagę, że przekazujemy currentUserTeamId!)
+        this.teamService.getTeamMembers(this.currentUserTeamId).subscribe({
+          next: (members) => {
+            this.teamMembers = members;
+
+            // 4. Teraz wczytujemy wszystkich użytkowników i filtrujemy tych, którzy są w zespole
+            this.userService.getAllUsers().subscribe({
+              next: (users) => {
+                this.nonTeamMembers = users.filter(
+                  (u) => !this.teamMembers.some((m) => m.id === u.id)
+                );
+              },
+              error: (err) => console.error('Błąd pobierania wszystkich użytkowników:', err)
+            });
+          },
+          error: (err) => console.error('Błąd pobierania członków zespołu:', err)
+        });
+      },
+      error: (err) => {
+        console.error('Błąd pobierania aktualnie zalogowanego użytkownika:', err);
+      }
+    });
   }
+
+  // Otwieramy modal
   openAddMemberModal(): void {
     this.showAddMemberModal = true;
-    this.selectedNewMember = this.nonTeamMembers[0]?.name || '';
+    // Jeśli mamy jakichś "wolnych" użytkowników, wybierz pierwszego z listy
+    this.selectedNewMemberId = this.nonTeamMembers[0]?.id || null;
     this.selectedNewMemberPosition = this.jobPositions[0];
+  }
+
+  // Zamykamy modal
+  closeAddMemberModal(): void {
+    this.showAddMemberModal = false;
+  }
+
+  // Dodawanie użytkownika do zespołu
+  addMemberToTeam(): void {
+    if (!this.selectedNewMemberId) {
+      alert('Wybierz pracownika!');
+      return;
+    }
+    if (!this.currentUserTeamId) {
+      alert('Nie należysz do żadnego zespołu!');
+      return;
+    }
+
+    const newMember = {
+      userId: this.selectedNewMemberId,
+      position: this.selectedNewMemberPosition
+    };
+
+    this.teamService.addTeamMember(newMember).subscribe({
+      next: (responseText) => {
+        alert(responseText);
+        // Po dodaniu użytkownika ponownie ładujemy listę członków i "wolnych" użytkowników
+        this.reloadTeamData();
+        this.closeAddMemberModal();
+      },
+      error: (err) => {
+        console.error('Błąd:', err);
+        const errorMsg = typeof err.error === 'string' ? err.error : JSON.stringify(err.error);
+        alert('Błąd dodawania do zespołu: ' + errorMsg);
+      }
+    });
+  }
+
+  // Usuwanie członka z zespołu
+  removeFromTeam(member: TeamMember): void {
+    this.teamService.removeTeamMember(member.id).subscribe({
+      next: (responseText) => {
+        alert(responseText);
+        // Po usunięciu ponownie ładujemy listy
+        this.reloadTeamData();
+      },
+      error: (error) => {
+        console.error('Błąd usuwania członka zespołu:', error);
+      }
+    });
+  }
+
+  // Metoda pomocnicza, by po dodaniu/usunięciu odświeżyć dane
+  private reloadTeamData(): void {
+    if (!this.currentUserTeamId) return;
+
+    this.teamService.getTeamMembers(this.currentUserTeamId).subscribe({
+      next: (members) => {
+        this.teamMembers = members;
+        this.userService.getAllUsers().subscribe({
+          next: (users) => {
+            this.nonTeamMembers = users.filter(
+              (u) => !this.teamMembers.some((m) => m.id === u.id)
+            );
+          },
+          error: (err) => console.error('Błąd pobierania wszystkich użytkowników:', err)
+        });
+      },
+      error: (err) => console.error('Błąd pobierania członków zespołu:', err)
+    });
+  }
+
+  // Paginacja (jak w Twoim przykładzie)
+  get paginatedMembers() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.teamMembers.slice(startIndex, startIndex + this.itemsPerPage);
   }
   nextPage(): void {
     if (this.currentPage * this.itemsPerPage < this.teamMembers.length) {
       this.currentPage++;
     }
   }
-
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
-
   get totalPages(): number {
     return Math.ceil(this.teamMembers.length / this.itemsPerPage);
   }
-
   get totalPagesArray(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
-
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
-  removeFromTeam(member: any): void {
-    this.teamMembers = this.teamMembers.filter(m => m !== member);
-    alert(`${member.name} został(a) usunięty(a) z zespołu.`);
-  }
-
+  // Nawigacja
   logout(): void {
     this.router.navigate(['/login']);
-  }
-
-  navigateToCalendar(): void {
-    this.router.navigate(['/calendar']);
-  }
-
-  navigateToTeam(): void {
-    this.router.navigate(['/team']);
-  }
-
-  navigateToTasks(): void {
-    this.router.navigate(['/tasks']);
-  }
-  addMemberToTeam(): void {
-    if (!this.selectedNewMember || !this.selectedNewMemberPosition) {
-      alert('Wybierz pracownika oraz stanowisko!');
-      return;
-    }
-
-    const newMember = {
-      name: this.selectedNewMember,
-      position: this.selectedNewMemberPosition
-    };
-
-    this.teamMembers.push(newMember);
-    this.nonTeamMembers = this.nonTeamMembers.filter(m => m.name !== this.selectedNewMember);
-    
-    alert(`${newMember.name} został(a) dodany(a) do zespołu na stanowisko ${newMember.position}.`);
-    
-    
-  }
-  closeAddMemberModal(): void {
-    this.showAddMemberModal = false;
   }
   navigateToDashboard(): void {
     this.router.navigate(['/dashboard']);
   }
-  addToTeam(): void {
-    const newMember = {
-      name: `Nowy Członek ${this.teamMembers.length + 1}`,
-      position: 'Nowa Rola'
-    };
-    
-    this.teamMembers.push(newMember);
-    alert(`${newMember.name} został(a) dodany(a) do zespołu.`);
+  navigateToCalendar(): void {
+    this.router.navigate(['/calendar']);
+  }
+  navigateToTeam(): void {
+    this.router.navigate(['/team']);
+  }
+  navigateToTasks(): void {
+    this.router.navigate(['/tasks']);
   }
 }

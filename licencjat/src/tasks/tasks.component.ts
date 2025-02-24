@@ -6,13 +6,29 @@ import { NgFor } from '@angular/common';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeamSearchComponent } from '../team-search/team-search.component';
+import { TasksService } from '../app/services/tasks.service';
+import { AuthService } from '../app/services/auth.service';
+import { User } from '../app/services/user.service';
+import { UserService } from '../app/services/user.service';
 
 interface Task {
+  id: number;
   title: string;
   description: string;
-  status: 'Issue' | 'In Progress' | 'Done';
-  createdBy: string;
+  status: 'Issue' | 'InProgress' | 'Done';
+  createdById: number;
+  createdBy?: { name: string; surname: string };
+  assignedToId?: number | null;
   createdDate: string;
+  assignedTo?: { name: string; surname: string } | null;
+}
+
+interface TaskCreateDto {
+  title: string;
+  description: string;
+  status: 'Issue' | 'InProgress' | 'Done';
+  createdById: number;
+  assignedToId?: number | null;
 }
 
 @Component({
@@ -20,159 +36,283 @@ interface Task {
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.scss'],
   standalone: true,
-  imports: [NgClass, NgIf, NgFor, CommonModule, FormsModule,TeamSearchComponent],
+  imports: [NgClass, NgIf, NgFor, CommonModule, FormsModule, TeamSearchComponent],
 })
 export class TasksComponent {
-  userName: string = 'Name Surname';
+  userName: string = 'Nieznany użytkownik';
+  tasks: Task[] = [];
+
+  // 🔹 Filtr statusu (domyślnie pusty → pokazuje wszystkie)
+  filterStatus: '' | 'Issue' | 'InProgress' | 'Done' = '';
+
+  // 🔹 Paginacja
   currentPage: number = 1;
   itemsPerPage: number = 3;
+
+  // 🔹 Modal
   showModal: boolean = false;
 
-  // Lista użytkowników, w tym "Name Surname"
-  teammates = [
-    { name: 'Name Surname' }, // ✅ Dodanie użytkownika Name Surname
-    { name: 'Anna Kowalska' },
-    { name: 'Jan Nowak' },
-    { name: 'Katarzyna Lis' },
-    { name: 'Marek Wiśniewski' },
-    { name: 'Piotr Adamski' }
-  ];
+  // 🔹 Lista użytkowników (do przypisywania zadań)
+  users: User[] = [];
+  selectedUserId: number | null = null;
 
-  tasks: Task[] = [
-    {
-      title: 'Zadanie 1',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      status: 'In Progress',
-      createdBy: 'Jan Kowalski',
-      createdDate: '2023-01-01',
-    },
-    {
-      title: 'Zadanie 2',
-      description: 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      status: 'Issue',
-      createdBy: 'Anna Nowak',
-      createdDate: '2023-01-02',
-    },
-    {
-      title: 'Zadanie 3',
-      description: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
-      status: 'In Progress',
-      createdBy: 'Piotr Wiśniewski',
-      createdDate: '2023-01-03',
-    }
-  ];
-
-  newTask: Task = {
+  // 🔹 Nowe zadanie (domyślnie InProgress)
+  newTask: TaskCreateDto = {
     title: '',
     description: '',
-    status: 'In Progress',
-    createdBy: this.teammates[0].name, // Domyślnie wybrany "Name Surname"
-    createdDate: new Date().toISOString().split('T')[0]
+    status: 'InProgress',
+    createdById: 0,
+    assignedToId: null
   };
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private tasksService: TasksService,
+    private authService: AuthService,
+    private userService: UserService
+  ) {}
 
-  // 🟢 Otwieranie modala
+  ngOnInit() {
+    this.userName = this.authService.getUserName();
+    // Najpierw pobierz użytkowników
+    this.loadUsers(() => {
+      // Dopiero wtedy pobierz zadania
+      this.loadTasks();
+    });
+  }
+
+  private loadTasks(): void {
+    this.tasksService.getMyTasks().subscribe({
+      next: (data) => {
+        console.log('Pobrane zadania z serwera:', data);
+  
+        this.tasks = data.map(task => {
+          // Normalizujemy status, ale nie dotykamy createdBy
+          const normalized = this.normalizeStatus(task.status);
+          return {
+            ...task,
+            status: normalized,
+            // assignedTo – jeśli chcesz, możesz przypisać z listy
+            assignedTo: this.users.find(u => u.id === task.assignedToId)
+          };
+        });
+  
+        console.log('Po normalizacji statusów:', this.tasks.map(t => t.status));
+      },
+      error: (error) => {
+        console.error("Błąd pobierania zadań:", error);
+        if (error.status === 401) {
+          alert('Sesja wygasła! Zaloguj się ponownie.');
+          this.router.navigate(['/login']);
+        }
+      }
+    });
+  }
+
+  private loadUsers(onLoaded?: () => void): void {
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        const allUsers = users;
+        const myId = this.authService.getCurrentUserId();
+        const me = allUsers.find(u => u.id === myId);
+  
+        if (!me) {
+          console.error('Nie znaleziono zalogowanego użytkownika w liście allUsers.');
+          this.users = [];
+          if (onLoaded) onLoaded();
+          return;
+        }
+  
+        // Filtrowanie po tym samym teamId
+        if (me.teamId) {
+          this.users = allUsers.filter(u => u.teamId === me.teamId);
+        } else {
+          this.users = [];
+        }
+  
+        if (onLoaded) onLoaded();
+      },
+      error: (error) => {
+        console.error("Błąd pobierania użytkowników:", error);
+        alert('Nie udało się pobrać listy użytkowników');
+      }
+    });
+  }
+  
+  
+
+  // 🔹 Metoda do otwierania modala
   openModal(): void {
     this.showModal = true;
   }
 
-  // 🟢 Zamknięcie modala
+  // 🔹 Metoda do zamykania modala
   closeModal(): void {
     this.showModal = false;
+    this.resetForm();
   }
 
-  // 🟢 Zapisywanie zadania tylko jeśli przypisane do "Name Surname"
+  // 🔹 Reset formularza po zamknięciu modala
+  private resetForm(): void {
+    const userId = this.authService.getCurrentUserId() || 0;
+    this.newTask = {
+      title: '',
+      description: '',
+      status: 'InProgress',
+      createdById: userId,
+      assignedToId: null
+    };
+    this.selectedUserId = null;
+  }
+
+  // 🔹 Tworzenie zadania
   saveTask(): void {
-    if (!this.newTask.title.trim() || !this.newTask.description.trim()) {
+    if (!this.newTask.title?.trim() || !this.newTask.description?.trim()) {
       alert('Proszę uzupełnić wszystkie pola!');
       return;
     }
 
-    if (this.newTask.createdBy !== this.userName) {
-      alert('To zadanie nie zostało przypisane do Ciebie. Nie zostanie dodane do listy.');
-      this.closeModal();
+    const userId = this.authService.getCurrentUserId();
+    if (!userId) {
+      alert('Błąd autentykacji! Zaloguj się ponownie.');
+      this.router.navigate(['/login']);
       return;
     }
 
-    const taskToAdd: Task = {
-      ...this.newTask,
-      createdDate: new Date().toISOString().split('T')[0]
+    const taskToSend: TaskCreateDto = {
+      title: this.newTask.title,
+      description: this.newTask.description,
+      status: this.newTask.status,
+      createdById: userId,
+      assignedToId: this.selectedUserId
     };
 
-    this.tasks.push(taskToAdd);
-
-    this.newTask = {
-      title: '',
-      description: '',
-      status: 'In Progress',
-      createdBy: this.teammates[0].name, // Resetowanie wyboru do "Name Surname"
-      createdDate: new Date().toISOString().split('T')[0]
-    };
-
-    this.closeModal();
+    this.tasksService.createTask(taskToSend).subscribe({
+      next: (savedTask) => {
+        // Dodajemy do listy tylko jeśli przypisane do mnie
+        if (savedTask.assignedToId === userId) {
+          const newTask: Task = {
+            ...savedTask,
+            assignedTo: this.users.find(u => u.id === savedTask.assignedToId) || null
+          };
+          this.tasks = [...this.tasks, newTask];
+        }
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error("Pełny błąd:", err.error);
+        const errorMessage = err.error?.errors
+          ? Object.values(err.error.errors).join('\n')
+          : 'Nieznany błąd serwera';
+        alert(`Błąd zapisu:\n${errorMessage}`);
+      }
+    });
   }
 
-  get paginatedTasks(): Task[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.tasks.slice(startIndex, startIndex + this.itemsPerPage);
+  // 🔹 Zmiana statusu
+  changeStatus(task: Task, newStatus: 'Issue' | 'InProgress' | 'Done'): void {
+    this.tasksService.updateTaskStatus(task.id, newStatus).subscribe({
+      next: () => {
+        task.status = newStatus;
+        this.loadTasks(); // odśwież zadania
+      },
+      error: (err) => {
+        console.error("Błąd aktualizacji statusu:", err);
+        alert('Nie udało się zmienić statusu zadania');
+      }
+    });
   }
-
-  nextPage(): void {
-    if (this.currentPage * this.itemsPerPage < this.tasks.length) {
-      this.currentPage++;
+  private normalizeStatus(status: string | number): 'Issue' | 'InProgress' | 'Done' {
+    // Gdy status to liczba:
+    if (typeof status === 'number') {
+      switch (status) {
+        case 0:
+          return 'Issue';
+        case 2:
+          return 'Done';
+        default:
+          return 'InProgress';
+      }
     }
+  
+    // Gdy status to string:
+    if (typeof status === 'string') {
+      const lower = status.toLowerCase();
+      if (lower === 'issue')      return 'Issue';
+      if (lower === 'done')       return 'Done';
+      return 'InProgress'; // fallback
+    }
+  
+    // W razie czego fallback
+    return 'InProgress';
+  }
+  // 🔹 Właściwość obliczana: filtr + paginacja
+  get paginatedAndFilteredTasks(): Task[] {
+    console.log(
+      'filterStatus =', this.filterStatus,
+      ' tasks:', this.tasks.map(t => t.status)
+    );
+  
+    // Upewnij się, że np. "InProgress".toLowerCase() => "inprogress"
+    let filtered = this.filterStatus
+      ? this.tasks.filter(task =>
+          task.status.toLowerCase() === this.filterStatus.toLowerCase()
+        )
+      : this.tasks;
+  
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return filtered.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+  
+
+  // 🔹 Ile stron w sumie (uwzględniając filtr)
+  get totalPages(): number {
+    const totalFiltered = this.filterStatus
+      ? this.tasks.filter(t => t.status === this.filterStatus).length
+      : this.tasks.length;
+    return Math.ceil(totalFiltered / this.itemsPerPage);
   }
 
+  // 🔹 Generujemy tablicę [1, 2, 3, ...] do wyświetlenia przycisków paginacji
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  // 🔹 Przejście do poprzedniej strony
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
 
-  changeStatus(task: Task, newStatus: 'Issue' | 'In Progress' | 'Done'): void {
-    if (newStatus === 'Done') {
-      this.tasks = this.tasks.filter(t => t !== task);
-    } else {
-      task.status = newStatus;
+  // 🔹 Przejście do następnej strony
+  nextPage(): void {
+    const totalFiltered = this.filterStatus
+      ? this.tasks.filter(t => t.status === this.filterStatus).length
+      : this.tasks.length;
+
+    if (this.currentPage * this.itemsPerPage < totalFiltered) {
+      this.currentPage++;
     }
   }
 
-  logout(): void {
-    this.router.navigate(['/login']);
-  }
-
-  navigateToDashboard(): void {
-    this.router.navigate(['/dashboard']);
-  }
-
-  navigateToChat(): void {
-    this.router.navigate(['/chat']);
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.tasks.length / this.itemsPerPage);
-  }
-
-  get totalPagesArray(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
+  // 🔹 Skok do wybranej strony
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
   }
 
-  navigateToTeam(): void {
-    this.router.navigate(['/team']);
+  // 🔹 Wylogowanie
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
-  navigateToCalendar(): void {
-    this.router.navigate(['/calendar']);
-  }
-
-  navigateToTasks(): void {
-    this.router.navigate(['/tasks']);
-  }
+  // 🔹 Nawigacja
+  navigateToDashboard(): void { this.router.navigate(['/dashboard']); }
+  navigateToCalendar(): void { this.router.navigate(['/calendar']); }
+  navigateToTeam(): void { this.router.navigate(['/team']); }
+  navigateToChat(): void { this.router.navigate(['/chat']); }
+  navigateToTasks(): void { this.router.navigate(['/tasks']); }
 }

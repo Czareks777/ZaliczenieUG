@@ -1,62 +1,90 @@
 <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <button class="sidebar-btn"><i class="bi bi-house-door"></i></button>
-      <button class="sidebar-btn" (click)="navigateToTeam()">
-        <i class="bi bi-people"></i>
-      </button>
-      <button class="sidebar-btn"><i class="bi bi-chat"></i></button>
-      <button class="sidebar-btn" routerLink="/calendar">
-        <i class="bi bi-calendar"></i>
-      </button>
-      <button class="sidebar-btn" routerLink="/tasks">
-      <i class="bi bi-list-check">
-      </i>
-    </button>
-    </aside>
-  
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Header -->
-      <header class="top-bar">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <app-team-search></app-team-search>
-        <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <img
-            src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740"
-            alt="User Avatar"
-            class="user-avatar" />
-          <button (click)="logout()" class="logout-button">Log out</button>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="sidebar-btn" (click)="navigateToDashboard()"><i class="bi bi-house-door"></i></button>
+    <button class="sidebar-btn" (click)="navigateToTeam()"><i class="bi bi-people"></i></button>
+    <button class="sidebar-btn" (click)="navigateToChat()"><i class="bi bi-chat"></i></button>
+    <button class="sidebar-btn" (click)="navigateToCalendar()"><i class="bi bi-calendar"></i></button>
+    <button class="sidebar-btn" (click)="navigateToTasks()"><i class="bi bi-list-check"></i></button>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="top-bar">
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      />
+      <app-team-search></app-team-search>
+
+      <div class="user-info">
+        <img
+          src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740"
+          alt="User Avatar"
+          class="user-avatar"
+        />
+        <span class="user-name">{{ userName }}</span>
+        <button (click)="logout()" class="logout-button">Log out</button>
+      </div>
+    </header>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <h2><strong>Witaj {{ userName }}!</strong></h2>
+    </section>
+
+    <!-- Tasks Section -->
+    <section class="tasks-section">
+      <h3><strong>Twoje ostatnie 3 zadania</strong></h3>
+      <!-- Kontener kart zadań -->
+      <div class="tasks-container">
+        <!-- Pętla *ngFor po recentTasks -->
+        <div class="task-card" *ngFor="let task of recentTasks">
+          <!-- Tytuł -->
+          <h4>{{ task.title }}</h4>
+
+          <!-- Opis -->
+          <p><strong>Opis zadania:</strong> {{ task.description }}</p>
+
+          <!-- Stworzone przez (o ile w obiekcie jest CreatedBy) -->
+          <p>
+            <strong>Stworzone przez:</strong>
+            <span *ngIf="task.createdBy; else unknownCreator">
+              {{ task.createdBy.name }} {{ task.createdBy.surname }}
+            </span>
+            <ng-template #unknownCreator>Nieznany</ng-template>
+          </p>
+
+          <!-- Przypisane do -->
+          <p>
+            <strong>Przypisane do:</strong>
+            <span *ngIf="task.assignedTo; else noAssignee">
+              {{ task.assignedTo.name }} {{ task.assignedTo.surname }}
+            </span>
+            <ng-template #noAssignee>Nieprzypisane</ng-template>
+          </p>
+
+          <!-- Data utworzenia -->
+          <p><strong>Data utworzenia:</strong> {{ task.createdDate }}</p>
+
+          <!-- Jeden przycisk z kolorem zależnym od statusu -->
+          <button class="task-status"
+  [ngClass]="{
+    'in-progress': getStatusString(task.status) === 'inprogress',
+    'done': getStatusString(task.status) === 'done',
+    'error': getStatusString(task.status) === 'issue'
+  }"
+>
+  <ng-container [ngSwitch]="getStatusString(task.status)">
+    <ng-container *ngSwitchCase="'inprogress'">IN PROGRESS</ng-container>
+    <ng-container *ngSwitchCase="'done'">DONE</ng-container>
+    <ng-container *ngSwitchCase="'issue'">ISSUE</ng-container>
+    <ng-container *ngSwitchDefault>UNKNOWN</ng-container>
+  </ng-container>
+</button>
         </div>
-      </header>
-  
-      <!-- Welcome Section -->
-      <section class="welcome-section">
-        <h2><strong>Witaj {{ userName }}!</strong></h2>
-      </section>
-  
-      <!-- Tasks Section -->
-      <section class="tasks-section">
-        <h3><strong>Twoje ostatnie 3 zadania</strong></h3>
-        <div class="tasks-container">
-          <div class="task-card">
-            <h4><strong>Zadanie 1</strong></h4>
-            <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum </p>
-            <button class="task-status error">Issue</button>
-          </div>
-          <div class="task-card">
-            <h4><strong>Zadanie 2</strong></h4>
-            <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum </p>
-            <button class="task-status in-progress">In Progress</button>
-          </div>
-          <div class="task-card">
-            <h4><strong>Zadanie 3</strong></h4>
-            <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum </p>
-            <button class="task-status done">Done</button>
-          </div>
-        </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </div>
-  
+</div>
