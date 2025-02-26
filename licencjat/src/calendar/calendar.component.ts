@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TeamSearchComponent } from "../team-search/team-search.component";
+import { TeamSearchComponent } from '../team-search/team-search.component';
+import { AuthService } from '../app/services/auth.service';  // <-- wstrzyknięcie
+import { UserService } from '../app/services/user.service';  // <-- wstrzyknięcie jeśli potrzebne
 
 @Component({
   selector: 'app-calendar',
@@ -14,18 +16,20 @@ import { TeamSearchComponent } from "../team-search/team-search.component";
   imports: [FullCalendarModule, FormsModule, CommonModule, TeamSearchComponent],
   styleUrls: ['./calendar.component.scss'],
 })
-export class CalendarComponent {
-  userName: string = 'Name Surname';
+export class CalendarComponent implements OnInit {
+  // Domyślna wartość
+  userName: string = 'Nieznany użytkownik';
+
   newEventTitle: string = '';
   newEventDate: string = '';
-  newEventDescription: string = ''; // Opis wydarzenia
+  newEventDescription: string = '';
 
   selectedEvent: any = null;
   isEditModalVisible: boolean = false;
 
-  tooltipContent: string = ''; // Treść tooltipa
-  tooltipPosition = { top: 0, left: 0 }; // Pozycja tooltipa
-  tooltipVisible: boolean = false; // Widoczność tooltipa
+  tooltipContent: string = '';
+  tooltipPosition = { top: 0, left: 0 };
+  tooltipVisible: boolean = false;
 
   calendarOptions = {
     initialView: 'dayGridMonth',
@@ -47,7 +51,31 @@ export class CalendarComponent {
     eventMouseLeave: this.handleEventMouseLeave.bind(this),
   };
 
-  constructor(private router: Router) {}
+  // Wstrzykujemy AuthService i (opcjonalnie) UserService
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService  // <-- jeśli chcesz też pobrać np. teamId
+  ) {}
+
+  // Analogicznie do TasksComponent
+  ngOnInit(): void {
+    // Jeśli w authService masz metodę, która zwraca np. "Jan Kowalski"
+    this.userName = this.authService.getUserName();
+
+    // (Opcjonalnie) Jeśli potrzebujesz pobrać coś więcej z serwera:
+    /*
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => {
+        // Sklejamy name i surname
+        this.userName = `${user.name} ${user.surname}`;
+      },
+      error: (err) => {
+        console.error('Błąd pobierania użytkownika:', err);
+      }
+    });
+    */
+  }
 
   logout() {
     this.router.navigate(['/login']);
@@ -59,7 +87,6 @@ export class CalendarComponent {
   navigateToTasks() {
     this.router.navigate(['/tasks']);
   }
-
   navigateToDashboard() {
     this.router.navigate(['/dashboard']);
   }
@@ -69,7 +96,11 @@ export class CalendarComponent {
     if (this.newEventTitle && this.newEventDate) {
       this.calendarOptions.events = [
         ...this.calendarOptions.events,
-        { title: this.newEventTitle, date: this.newEventDate, description: this.newEventDescription },
+        {
+          title: this.newEventTitle,
+          date: this.newEventDate,
+          description: this.newEventDescription
+        },
       ];
       this.newEventTitle = '';
       this.newEventDate = '';
@@ -91,19 +122,19 @@ export class CalendarComponent {
   handleEventMouseEnter(info: any) {
     const description = info.event.extendedProps.description;
     if (description) {
-      this.tooltipContent = description; // Ustaw treść tooltipa
+      this.tooltipContent = description;
       const rect = info.el.getBoundingClientRect();
       this.tooltipPosition = {
-        top: rect.top + window.scrollY - 40, // Pozycja nad elementem
-        left: rect.left + window.scrollX + rect.width / 2, // Wyśrodkowanie
+        top: rect.top + window.scrollY - 40,
+        left: rect.left + window.scrollX + rect.width / 2,
       };
-      this.tooltipVisible = true; // Pokaż tooltip
+      this.tooltipVisible = true;
     }
   }
 
   handleEventMouseLeave() {
-    this.tooltipVisible = false; // Ukryj tooltip
-    this.tooltipContent = ''; // Wyczyść treść tooltipa
+    this.tooltipVisible = false;
+    this.tooltipContent = '';
   }
 
   saveEvent() {
@@ -115,13 +146,15 @@ export class CalendarComponent {
       alert('Wydarzenie zostało zaktualizowane!');
     }
   }
+
   deleteEvent() {
     if (this.selectedEvent) {
-      this.selectedEvent.remove(); // Usuwa wydarzenie z kalendarza
-      this.isEditModalVisible = false; // Ukrywa modal
+      this.selectedEvent.remove();
+      this.isEditModalVisible = false;
       alert('Wydarzenie zostało usunięte!');
     }
   }
+
   closeEditModal() {
     this.isEditModalVisible = false;
   }

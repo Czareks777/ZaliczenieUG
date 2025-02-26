@@ -66,7 +66,9 @@ export class TeamComponent implements OnInit {
         // 3. Wczytujemy członków zespołu (zwróć uwagę, że przekazujemy currentUserTeamId!)
         this.teamService.getTeamMembers(this.currentUserTeamId).subscribe({
           next: (members) => {
-            this.teamMembers = members;
+            // 🔹 Wykluczamy zalogowanego usera
+            const myId = this.authService.getCurrentUserId();
+            this.teamMembers = members.filter(m => m.id !== myId);
 
             // 4. Teraz wczytujemy wszystkich użytkowników i filtrujemy tych, którzy są w zespole
             this.userService.getAllUsers().subscribe({
@@ -151,7 +153,10 @@ export class TeamComponent implements OnInit {
 
     this.teamService.getTeamMembers(this.currentUserTeamId).subscribe({
       next: (members) => {
-        this.teamMembers = members;
+        // 🔹 Ponownie wykluczamy zalogowanego usera
+        const myId = this.authService.getCurrentUserId();
+        this.teamMembers = members.filter(m => m.id !== myId);
+
         this.userService.getAllUsers().subscribe({
           next: (users) => {
             this.nonTeamMembers = users.filter(

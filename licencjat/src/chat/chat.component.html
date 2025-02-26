@@ -7,7 +7,7 @@
     <button class="sidebar-btn" (click)="navigateToCalendar()"><i class="bi bi-calendar"></i></button>
     <button class="sidebar-btn" (click)="navigateToTasks()"><i class="bi bi-list-check"></i></button>
     <!-- Nowy przycisk Settings -->
-    <button class="sidebar-btn" ><i class="bi bi-gear"></i></button>
+    <button class="sidebar-btn"><i class="bi bi-gear"></i></button>
   </aside>
 
   <!-- Main Content -->
@@ -28,25 +28,22 @@
       <!-- Contact List -->
       <div class="contact-list">
         <h3>Contact list of teammates</h3>
-
         <!-- Lista kontaktów -->
         <div class="contact-items-container">
           <div *ngFor="let teammate of teammates" class="contact-item" (click)="selectTeammate(teammate)">
             {{ teammate.name }}
           </div>
         </div>
-
         <!-- Przycisk "Create Group Chat" -->
         <button class="group-chat-btn" (click)="openGroupChatModal()">Create Group Chat</button>
       </div>
+
       <div class="modal-backdrop" *ngIf="showGroupChatModal"></div>
       <div class="modal" *ngIf="showGroupChatModal">
         <div class="modal-content">
           <h2 class="modal-title"><strong>Stwórz Grupowy Czat</strong></h2>
-      
           <label for="chatTitle"><strong>Tytuł chatu</strong></label>
           <input id="chatTitle" type="text" [(ngModel)]="groupChatTitle" placeholder="Wpisz tytuł czatu" />
-      
           <label><strong>Dodaj uczestników</strong></label>
           <mat-form-field appearance="fill">
             <mat-label>Wybierz członków zespołu</mat-label>
@@ -58,13 +55,13 @@
               </mat-option>
             </mat-select>
           </mat-form-field>
-      
           <div class="modal-actions">
             <button class="btn-secondary" (click)="closeGroupChatModal()">Wróć</button>
             <button class="btn-primary" (click)="createGroupChat()">Stwórz</button>
           </div>
         </div>
       </div>
+
       <!-- Chat Window -->
       <div class="chat-window">
         <h3>Chat with {{ selectedTeammate?.name || "..." }}</h3>
@@ -73,7 +70,6 @@
             {{ message.content }}
           </div>
         </div>
-
         <!-- Input Box -->
         <div class="chat-input">
           <input type="text" [(ngModel)]="newMessage" placeholder="Type a message..." />

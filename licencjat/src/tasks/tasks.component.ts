@@ -123,9 +123,9 @@ export class TasksComponent {
           return;
         }
   
-        // Filtrowanie po tym samym teamId
+        // Filtrowanie użytkowników: ten sam teamId oraz wykluczenie zalogowanego użytkownika
         if (me.teamId) {
-          this.users = allUsers.filter(u => u.teamId === me.teamId);
+          this.users = allUsers.filter(u => u.teamId === me.teamId && u.id !== myId);
         } else {
           this.users = [];
         }
@@ -138,6 +138,7 @@ export class TasksComponent {
       }
     });
   }
+  
   
   
 
