@@ -1,31 +1,84 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../app/services/auth.service';
+import { UserService } from '../app/services/user.service';
+import { TeamService, TeamMember } from '../app/services/team.service';
+import { Router } from '@angular/router'; // <-- potrzebujemy do nawigacji
+
 @Component({
   selector: 'app-team-search',
   templateUrl: './team-search.component.html',
   styleUrls: ['./team-search.component.scss'],
   standalone: true,
-  imports: [ CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule]
 })
-
-
-
-export class TeamSearchComponent {
+export class TeamSearchComponent implements OnInit {
   isDropdownOpen: boolean = false;
   searchQuery: string = '';
-  teammates = [
-    { name: 'Anna Kowalska', avatar: 'https://s6.tvp.pl/images2/f/4/2/uid_f4242266dcc9ab138a278588e0866ddd1637159642815_width_1143_play_0_pos_0_gs_0_height_0.jpg' },
-    { name: 'Jan Nowak', avatar: 'https://drlucy.pl/wp-content/uploads/pieskot.jpg' },
-    { name: 'Katarzyna Lis', avatar: 'https://www.zooplus.pl/magazyn/wp-content/uploads/2023/08/Kot-i-pies-pod-jednym-dachem-768x512.jpeg' },
-    { name: 'Marek Wiśniewski', avatar: 'https://tueuropa.pl/uploads/articles_files/2023/09/25/7d22a265-7a02-cbe9-63a4-000049bc5cc8.jpg' },
-    { name: 'Piotr Adamski', avatar: 'https://www.monolith.pl/wp-content/uploads/2024/01/pies-i-kot-visuel-9-chien-et-chat-2024-mandarin-et-compagnie-la-station-animation-gaumont-tf1-films-production-canin-et-felin-1280x720.jpeg' }
-  ];
+
+  // Zmieniamy strukturę, by przechowywać id, name i avatar
+  teammates: Array<{
+    id: number;
+    name: string;
+    avatar: string;
+  }> = [];
+
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private teamService: TeamService,
+    private router: Router            // <-- wstrzykujemy Router
+  ) {}
+
+  ngOnInit(): void {
+    this.userService.getCurrentUser().subscribe({
+      next: (currentUser) => {
+        if (currentUser.teamId) {
+          this.teamService.getTeamMembers(currentUser.teamId).subscribe({
+            next: (members: TeamMember[]) => {
+              // Wykluczamy zalogowanego
+              const filtered = members.filter(m => m.id !== currentUser.id);
+
+              // Każdy element ma teraz id, name, avatar
+              this.teammates = filtered.map(m => ({
+                id: m.id,
+                name: `${m.name} ${m.surname}`,
+                avatar: this.getRandomAvatar()
+              }));
+            },
+            error: (err) => {
+              console.error('Błąd pobierania członków zespołu:', err);
+            }
+          });
+        } else {
+          console.log('Użytkownik nie ma teamId – brak członków zespołu.');
+          this.teammates = [];
+        }
+      },
+      error: (err) => {
+        console.error('Błąd pobierania aktualnie zalogowanego użytkownika:', err);
+      }
+    });
+  }
+
+  private getRandomAvatar(): string {
+    const defaultAvatar = 'https://via.placeholder.com/40/aaaaaa/FFFFFF?text=User';
+    return defaultAvatar;
+  }
 
   get filteredTeammates() {
     return this.teammates.filter(member =>
       member.name.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
+  }
+
+  // Po kliknięciu w dropdown-item
+  goToChat(member: { id: number; name: string; avatar: string }) {
+    // Nawigacja do /chat z queryParam userId
+    this.router.navigate(['/chat'], {
+      queryParams: { userId: member.id }
+    });
   }
 
   toggleDropdown() {

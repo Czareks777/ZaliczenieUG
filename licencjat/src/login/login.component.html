@@ -1,12 +1,15 @@
-<form (submit)="login(); $event.preventDefault()">
-  <input type="text" [(ngModel)]="username" name="username" placeholder="Login" class="login-input" required />
-  <input type="password" [(ngModel)]="password" name="password" placeholder="Hasło" class="login-input" required />
-  
-  <div class="forgot-password">
-    <a (click)="navigateToForgotPassword()">Nie pamiętam hasła</a>
-  </div>
+<div class="login-container">
+  <h1>Zaloguj się do naszego systemu!</h1>
+  <form (submit)="login(); $event.preventDefault()">
+    <input type="text" [(ngModel)]="username" name="username" placeholder="Login" class="login-input" required />
+    <input type="password" [(ngModel)]="password" name="password" placeholder="Hasło" class="login-input" required />
 
-  <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <div class="forgot-password">
+      <a (click)="navigateToForgotPassword()">Nie pamiętam hasła</a>
+    </div>
 
-  <button type="submit" class="login-button">Zaloguj</button>
-</form>
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+    <button type="submit" class="login-button">Zaloguj</button>
+  </form>
+</div>

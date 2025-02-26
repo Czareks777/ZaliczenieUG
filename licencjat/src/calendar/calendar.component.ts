@@ -154,7 +154,8 @@ export class CalendarComponent implements OnInit {
       alert('Wydarzenie zostało usunięte!');
     }
   }
-
+  navigateToChat(): void { this.router.navigate(['/chat']); }
+  navigateToCalendar(): void { this.router.navigate(['/calendar']); }
   closeEditModal() {
     this.isEditModalVisible = false;
   }

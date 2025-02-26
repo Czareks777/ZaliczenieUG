@@ -96,7 +96,12 @@ export class TeamComponent implements OnInit {
     this.selectedNewMemberId = this.nonTeamMembers[0]?.id || null;
     this.selectedNewMemberPosition = this.jobPositions[0];
   }
-
+  goToChat(member: TeamMember): void {
+    // Najlepiej przekazać np. ID użytkownika w queryParams
+    this.router.navigate(['/chat'], {
+      queryParams: { userId: member.id }
+    });
+  }
   // Zamykamy modal
   closeAddMemberModal(): void {
     this.showAddMemberModal = false;
@@ -210,6 +215,7 @@ export class TeamComponent implements OnInit {
   navigateToTeam(): void {
     this.router.navigate(['/team']);
   }
+  navigateToChat(): void { this.router.navigate(['/chat']); }
   navigateToTasks(): void {
     this.router.navigate(['/tasks']);
   }

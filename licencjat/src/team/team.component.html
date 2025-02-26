@@ -3,7 +3,7 @@
   <aside class="sidebar">
     <button class="sidebar-btn" (click)="navigateToDashboard()"><i class="bi bi-house-door"></i></button>
     <button class="sidebar-btn" (click)="navigateToTeam()"><i class="bi bi-people"></i></button>
-    <button class="sidebar-btn"><i class="bi bi-chat"></i></button>
+    <button class="sidebar-btn" (click)="navigateToChat()"><i class="bi bi-chat"></i></button>
     <button class="sidebar-btn" (click)="navigateToCalendar()"><i class="bi bi-calendar"></i></button>
     <button class="sidebar-btn" (click)="navigateToTasks()"><i class="bi bi-list-check"></i></button>
   </aside>
@@ -35,7 +35,7 @@
             <img src="https://img.freepik.com/premium-zdjecie/fioletowe-tapety-ktore-sa-fioletowe-i-niebieskie_902639-25416.jpg?w=740" alt="Team Member" class="team-avatar" />
             <h4>{{ member.name }}</h4>
             <p>{{ member.position }}</p>
-            <button class="team-button">Napisz</button>
+            <button class="team-button" (click)="goToChat(member)">Napisz</button>
             <button class="remove-button" (click)="removeFromTeam(member)">Usuń z zespołu</button>
           </div>
         </div>

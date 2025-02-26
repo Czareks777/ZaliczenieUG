@@ -1,75 +1,105 @@
+/* login.component.scss (lub .css) */
 
-.login-container {
+/* Tło na cały ekran */
+:host {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   height: 100vh;
-  background-color: #5c5561;
-}
-
-.login-box {
-  background-color: #fdf7f7;
-  border-radius: 8px;
-  padding: 30px 40px;
-  justify-content: center; 
-  align-items: center; 
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.login-input {
   width: 100%;
-  margin: 10px 0;
-  padding: 10px;
-  justify-content: center; 
-  align-items: center; 
-  border: none;
-  border-radius: 20px;
-  background-color: #e6e6e6;
-  text-align: center;
+  background-color: #6b636e; /* ciemnoszary/ fioletowy odcień tła strony */
+  margin: 0;
+  padding: 0;
 }
 
-.forgot-password {
-  font-size: 0.9em;
-  color: #8b6ae4;
-  justify-content: center; 
+/* Pojemnik na treść formularza */
+.login-container {
+  background-color: #f4f4f4;  /* jasne tło „karty” */
+  border-radius: 20px;
+  width: 350px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center; /* centrowanie zawartości w poziomie */
+}
+
+/* Nagłówek powitalny */
+.login-container h1 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* Sam formularz */
+form {
+  display: flex;
+  flex-direction: column;
   align-items: center; 
-  margin-top: 10px;
-  margin-bottom: 20px;
+}
+
+/* Pola tekstowe */
+.login-input {
+  width: 80%;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 16px;
+  color: #333;
+  background-color: #e2e2e2; 
+  border: none;
+  border-radius: 30px;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.login-input::placeholder {
+  color: #999;
+}
+
+.login-input:focus {
+  outline: none;
+  background-color: #ddd; 
+}
+
+/* Link "Nie pamiętam hasła" */
+.forgot-password {
+  margin-bottom: 1rem;
 }
 
 .forgot-password a {
+  font-size: 0.85rem;
+  color: #666;
   text-decoration: none;
-  color: #8b6ae4;
-  justify-content: center; 
-  align-items: center; 
   cursor: pointer;
-  transition: color 0.3s ease-in-out;
 }
 
 .forgot-password a:hover {
   text-decoration: underline;
-  color: #6a4fbf;
 }
 
+/* Komunikat błędu */
+.error-message {
+  margin-bottom: 1rem;
+  color: #ff0000; 
+  font-weight: 500;
+}
+
+/* Przycisk "Zaloguj" */
 .login-button {
-  background-color: #a385ff;
-  color: white;
+  width: 80%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #b29ef8; /* pastelowy fiolet */
   border: none;
-  justify-content: center; 
-  align-items: center; 
-  padding: 10px 20px;
-  border-radius: 20px;
+  border-radius: 30px;
   cursor: pointer;
-  margin-top: 10px;
+  transition: background-color 0.2s;
 }
 
 .login-button:hover {
-  background-color: #8b6ae4;
+  background-color: #9f8bdf; /* ciemniejszy odcień fioletu */
+}
+h1{
+  font-weight: bold;
 }

@@ -1,3 +1,4 @@
+// tasks.component.ts
 import { NgClass } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
@@ -52,8 +53,12 @@ export class TasksComponent {
   // 🔹 Modal
   showModal: boolean = false;
 
-  // 🔹 Lista użytkowników (do przypisywania zadań)
+  // 🔹 Lista użytkowników do selecta (bez siebie)
   users: User[] = [];
+
+  // 🔹 Lista wszystkich członków zespołu (łącznie z zalogowanym)
+  allTeamMembers: User[] = [];
+
   selectedUserId: number | null = null;
 
   // 🔹 Nowe zadanie (domyślnie InProgress)
@@ -85,18 +90,18 @@ export class TasksComponent {
     this.tasksService.getMyTasks().subscribe({
       next: (data) => {
         console.log('Pobrane zadania z serwera:', data);
-  
+
         this.tasks = data.map(task => {
-          // Normalizujemy status, ale nie dotykamy createdBy
+          // Normalizujemy status
           const normalized = this.normalizeStatus(task.status);
           return {
             ...task,
             status: normalized,
-            // assignedTo – jeśli chcesz, możesz przypisać z listy
-            assignedTo: this.users.find(u => u.id === task.assignedToId)
+            // 🔹 Teraz szukamy assignedTo w ALLTeamMembers (łącznie z zalogowanym userem)
+            assignedTo: this.allTeamMembers.find(u => u.id === task.assignedToId) || null
           };
         });
-  
+
         console.log('Po normalizacji statusów:', this.tasks.map(t => t.status));
       },
       error: (error) => {
@@ -112,24 +117,28 @@ export class TasksComponent {
   private loadUsers(onLoaded?: () => void): void {
     this.userService.getAllUsers().subscribe({
       next: (users) => {
-        const allUsers = users;
         const myId = this.authService.getCurrentUserId();
-        const me = allUsers.find(u => u.id === myId);
-  
+        const me = users.find(u => u.id === myId);
+
         if (!me) {
           console.error('Nie znaleziono zalogowanego użytkownika w liście allUsers.');
           this.users = [];
+          this.allTeamMembers = [];
           if (onLoaded) onLoaded();
           return;
         }
-  
-        // Filtrowanie użytkowników: ten sam teamId oraz wykluczenie zalogowanego użytkownika
+
         if (me.teamId) {
-          this.users = allUsers.filter(u => u.teamId === me.teamId && u.id !== myId);
+          // 🔹 Zapisz wszystkich członków zespołu (łącznie z nami)
+          this.allTeamMembers = users.filter(u => u.teamId === me.teamId);
+
+          // 🔹 Do selecta usuwamy zalogowanego
+          this.users = this.allTeamMembers.filter(u => u.id !== myId);
         } else {
           this.users = [];
+          this.allTeamMembers = [];
         }
-  
+
         if (onLoaded) onLoaded();
       },
       error: (error) => {
@@ -138,9 +147,6 @@ export class TasksComponent {
       }
     });
   }
-  
-  
-  
 
   // 🔹 Metoda do otwierania modala
   openModal(): void {
@@ -192,9 +198,10 @@ export class TasksComponent {
       next: (savedTask) => {
         // Dodajemy do listy tylko jeśli przypisane do mnie
         if (savedTask.assignedToId === userId) {
+          // Znajdujemy assignedTo w allTeamMembers
           const newTask: Task = {
             ...savedTask,
-            assignedTo: this.users.find(u => u.id === savedTask.assignedToId) || null
+            assignedTo: this.allTeamMembers.find(u => u.id === savedTask.assignedToId) || null
           };
           this.tasks = [...this.tasks, newTask];
         }
@@ -223,8 +230,8 @@ export class TasksComponent {
       }
     });
   }
+
   private normalizeStatus(status: string | number): 'Issue' | 'InProgress' | 'Done' {
-    // Gdy status to liczba:
     if (typeof status === 'number') {
       switch (status) {
         case 0:
@@ -235,38 +242,27 @@ export class TasksComponent {
           return 'InProgress';
       }
     }
-  
-    // Gdy status to string:
     if (typeof status === 'string') {
       const lower = status.toLowerCase();
       if (lower === 'issue')      return 'Issue';
       if (lower === 'done')       return 'Done';
-      return 'InProgress'; // fallback
+      return 'InProgress';
     }
-  
-    // W razie czego fallback
     return 'InProgress';
   }
+
   // 🔹 Właściwość obliczana: filtr + paginacja
   get paginatedAndFilteredTasks(): Task[] {
-    console.log(
-      'filterStatus =', this.filterStatus,
-      ' tasks:', this.tasks.map(t => t.status)
-    );
-  
-    // Upewnij się, że np. "InProgress".toLowerCase() => "inprogress"
     let filtered = this.filterStatus
       ? this.tasks.filter(task =>
           task.status.toLowerCase() === this.filterStatus.toLowerCase()
         )
       : this.tasks;
-  
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return filtered.slice(startIndex, startIndex + this.itemsPerPage);
   }
-  
 
-  // 🔹 Ile stron w sumie (uwzględniając filtr)
   get totalPages(): number {
     const totalFiltered = this.filterStatus
       ? this.tasks.filter(t => t.status === this.filterStatus).length
@@ -274,19 +270,16 @@ export class TasksComponent {
     return Math.ceil(totalFiltered / this.itemsPerPage);
   }
 
-  // 🔹 Generujemy tablicę [1, 2, 3, ...] do wyświetlenia przycisków paginacji
   get totalPagesArray(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
-  // 🔹 Przejście do poprzedniej strony
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
 
-  // 🔹 Przejście do następnej strony
   nextPage(): void {
     const totalFiltered = this.filterStatus
       ? this.tasks.filter(t => t.status === this.filterStatus).length
@@ -297,7 +290,6 @@ export class TasksComponent {
     }
   }
 
-  // 🔹 Skok do wybranej strony
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;

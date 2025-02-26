@@ -32,17 +32,22 @@
     </section>
 
     <!-- Filtr statusu -->
-    <label for="statusFilter">Filtruj po statusie:</label>
-    <select id="statusFilter" [(ngModel)]="filterStatus">
-      <option value="">Wszystkie</option>
-      <option value="Issue">Issue</option>
-      <option value="InProgress">InProgress</option>
-      <option value="Done">Done</option>
-    </select>
+    
 
     <!-- Task Cards Section -->
     <section class="tasks-section">
       <h3><strong>Twoje zadania</strong></h3>
+    
+      <!-- Filtr statusu (przeniesiony pod nagłówek) -->
+      <div class="task-filter">
+        <label for="statusFilter">Filtruj po statusie:</label>
+        <select id="statusFilter" [(ngModel)]="filterStatus">
+          <option value="">Wszystkie</option>
+          <option value="Issue">Issue</option>
+          <option value="InProgress">InProgress</option>
+          <option value="Done">Done</option>
+        </select>
+      </div>
 
       <div class="team-container">
         <div class="task-card" *ngFor="let task of paginatedAndFilteredTasks">
@@ -58,10 +63,11 @@
             </span>
             <ng-template #noAssignee>Nieprzypisane</ng-template>
           </p>
-         
+          
           <p><strong>Status:</strong> {{ task.status }}</p>
-          <p><strong>Data utworzenia:</strong> {{ task.createdDate }}</p>
-
+          <!-- Zmiana w linii poniżej: używamy pipe 'date' -->
+          <p><strong>Data utworzenia:</strong> {{ task.createdDate | date:'dd.MM.yyyy HH:mm' }}</p>
+      
           <div class="task-actions">
             <button (click)="changeStatus(task, 'InProgress')">IN PROGRESS</button>
             <button (click)="changeStatus(task, 'Done')">DONE</button>

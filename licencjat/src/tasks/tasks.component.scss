@@ -356,3 +356,26 @@ app-root {
 .btn-secondary:hover {
   background: #a1a1a1;
 }
+.task-filter {
+  margin: 20px auto;          /* Odstęp wokół filtra */
+  text-align: center;         /* Wyśrodkowanie tekstu i selecta */
+  display: inline-block;      /* Pozwala nadać np. tło i padding */
+  padding: 10px 20px;
+  background-color: #fdf7f7;  /* Jasne tło (dopasowane do tła .main-content) */
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Styl etykiety */
+.task-filter label {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Styl selecta */
+.task-filter select {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}

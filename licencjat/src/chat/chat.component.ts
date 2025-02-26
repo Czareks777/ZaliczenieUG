@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
@@ -26,15 +26,12 @@ import { Subscription } from 'rxjs';
 })
 export class ChatComponent implements OnInit, OnDestroy {
   userName: string = '';
-
-  // Tablica członków zespołu pobrana z backendu
   teammates: { id: number; name: string }[] = [];
-  selectedTeammate: any = null;
+  selectedTeammate: { id: number; name: string } | null = null;
 
   messages: ChatMessage[] = [];
   newMessage: string = '';
 
-  // Dla czatu grupowego (opcjonalnie)
   showGroupChatModal: boolean = false;
   groupChatTitle: string = '';
   selectedTeammates: any[] = [];
@@ -42,6 +39,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private messageSubscription!: Subscription;
 
   constructor(
+    private route: ActivatedRoute,            // <-- Wstrzykujemy ActivatedRoute
     private router: Router,
     private chatService: ChatService,
     private teamService: TeamService,
@@ -49,17 +47,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Pobieramy pełną nazwę użytkownika z AuthService
     this.userName = this.authService.getUserName();
-
-    // Nawiązujemy połączenie przez SignalR, przekazując poprawny userName
     this.chatService.startConnection(this.userName);
 
-    // Pobieramy członków zespołu (w przykładzie zakładamy teamId = 1, 
-    // ale możesz to dynamicznie pobrać z tokena lub z getCurrentUser()).
+    // 1) Najpierw pobieramy listę teammate'ów
     this.teamService.getTeamMembers(1).subscribe({
       next: (members: TeamMember[]) => {
-        // Wykluczamy aktualnie zalogowanego usera
         const myId = this.authService.getCurrentUserId();
         this.teammates = members
           .filter(m => m.id !== myId)
@@ -67,6 +60,19 @@ export class ChatComponent implements OnInit, OnDestroy {
             id: member.id,
             name: `${member.name} ${member.surname}`
           }));
+
+        // 2) Teraz sprawdzamy, czy w queryParams mamy userId
+        this.route.queryParamMap.subscribe(params => {
+          const userIdParam = params.get('userId');
+          if (userIdParam) {
+            const parsedId = parseInt(userIdParam, 10);
+            // Szukamy w this.teammates
+            const found = this.teammates.find(t => t.id === parsedId);
+            if (found) {
+              this.selectTeammate(found);
+            }
+          }
+        });
       },
       error: (err) => console.error('Błąd pobierania członków zespołu:', err)
     });
@@ -85,42 +91,37 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectTeammate(teammate: any): void {
+  selectTeammate(teammate: { id: number; name: string }): void {
     this.selectedTeammate = teammate;
-  
-    // 1) Pobieramy historię wiadomości
+
+    // Pobieramy historię
     this.chatService.getMessages(this.userName, teammate.name).subscribe({
       next: (msgs) => {
-        // 2) Zamieniamy pole timestamp na Date (bo przyjdzie jako string)
         this.messages = msgs.map(m => ({
           ...m,
           timestamp: new Date(m.timestamp)
         }));
       },
       error: (err) => {
-        console.error("Błąd pobierania wiadomości:", err);
-        alert("Nie udało się pobrać historii czatu");
+        console.error('Błąd pobierania wiadomości:', err);
+        alert('Nie udało się pobrać historii czatu');
       }
     });
   }
 
-  // Wysyłanie wiadomości do wybranego użytkownika
   sendMessage(): void {
     if (!this.newMessage || !this.selectedTeammate) return;
 
     this.chatService.sendMessage(this.userName, this.selectedTeammate.name, this.newMessage)
-    .then(() => {
-      this.newMessage = '';
+      .then(() => {
+        // Nie dodajemy lokalnie, bo i tak przyjdzie z serwera
+        this.newMessage = '';
       });
   }
 
-  // Obsługa modala do czatu grupowego
-  openGroupChatModal(): void {
-    this.showGroupChatModal = true;
-  }
-  closeGroupChatModal(): void {
-    this.showGroupChatModal = false;
-  }
+  // Modal czatu grupowego, itp.
+  openGroupChatModal(): void { this.showGroupChatModal = true; }
+  closeGroupChatModal(): void { this.showGroupChatModal = false; }
   createGroupChat(): void {
     if (!this.groupChatTitle.trim() || this.selectedTeammates.length === 0) {
       alert('Podaj tytuł czatu i wybierz uczestników.');
@@ -131,19 +132,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   // Nawigacja
-  logout(): void {
-    this.router.navigate(['/login']);
-  }
-  navigateToCalendar(): void {
-    this.router.navigate(['/calendar']);
-  }
-  navigateToTeam(): void {
-    this.router.navigate(['/team']);
-  }
-  navigateToTasks(): void {
-    this.router.navigate(['/tasks']);
-  }
-  navigateToDashboard(): void {
-    this.router.navigate(['/dashboard']);
-  }
+  logout(): void { this.router.navigate(['/login']); }
+  navigateToCalendar(): void { this.router.navigate(['/calendar']); }
+  navigateToTeam(): void { this.router.navigate(['/team']); }
+  navigateToTasks(): void { this.router.navigate(['/tasks']); }
+  navigateToChat(): void { this.router.navigate(['/chat']); }
+  navigateToDashboard(): void { this.router.navigate(['/dashboard']); }
 }
